@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import client from '../../api/client';
-import { Calendar, Clock, MapPin, Link as LinkIcon, Plus, Trash2, Pencil } from 'lucide-react';
+import { Calendar, Clock, MapPin, Link as LinkIcon, Plus, Trash2, Pencil, List, CalendarDays } from 'lucide-react';
+import { ScheduleCalendar } from './ScheduleCalendar';
+import { ScheduleDetailModal } from './ScheduleDetailModal';
 
 export const ScheduleList = () => {
   const [schedules, setSchedules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
   
   // Form state
   const [title, setTitle] = useState('');
@@ -14,6 +18,7 @@ export const ScheduleList = () => {
   const [endTime, setEndTime] = useState('');
   const [location, setLocation] = useState('');
   const [link, setLink] = useState('');
+  const [color, setColor] = useState('#3B82F6');
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -36,7 +41,7 @@ export const ScheduleList = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = { title, description, startTime, endTime, location, link };
+    const data = { title, description, startTime, endTime, location, link, color };
     try {
       if (editingId) {
         await client.patch(`/schedules/${editingId}`, data);
@@ -57,6 +62,7 @@ export const ScheduleList = () => {
     setEndTime(new Date(s.endTime).toISOString().slice(0, 16));
     setLocation(s.location || '');
     setLink(s.link || '');
+    setColor(s.color || '#3B82F6');
     setEditingId(s.id);
     setShowAddForm(true);
   };
@@ -78,6 +84,7 @@ export const ScheduleList = () => {
     setEndTime('');
     setLocation('');
     setLink('');
+    setColor('#3B82F6');
     setEditingId(null);
     setShowAddForm(false);
   };
@@ -86,19 +93,46 @@ export const ScheduleList = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <Calendar className="h-6 w-6 text-blue-600" />
           信息学奥赛日程安排
         </h2>
-        {isAdminOrTeacher && (
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition text-sm"
-          >
-            <Plus className="h-4 w-4" /> 发布日程
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {/* 视图切换按钮 */}
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-bold transition ${
+                viewMode === 'list'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <List className="h-4 w-4" />
+              列表
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-bold transition ${
+                viewMode === 'calendar'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <CalendarDays className="h-4 w-4" />
+              日历
+            </button>
+          </div>
+          {isAdminOrTeacher && (
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition text-sm"
+            >
+              <Plus className="h-4 w-4" /> 发布日程
+            </button>
+          )}
+        </div>
       </div>
 
       {showAddForm && isAdminOrTeacher && (
@@ -165,6 +199,30 @@ export const ScheduleList = () => {
               placeholder="https://..."
             />
           </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium">日历颜色</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="h-10 w-20 rounded-lg border cursor-pointer"
+              />
+              <div className="flex gap-2">
+                {['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setColor(c)}
+                    className={`w-8 h-8 rounded-lg transition-all hover:scale-110 ${
+                      color === c ? 'ring-2 ring-offset-2 ring-gray-400' : ''
+                    }`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
           <div className="flex justify-end gap-3">
             <button type="button" onClick={resetForm} className="px-4 py-2 text-gray-600">取消</button>
             <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">
@@ -174,17 +232,42 @@ export const ScheduleList = () => {
         </form>
       )}
 
-      <div className="space-y-4">
-        {schedules.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
-            暂无日程安排
-          </div>
-        ) : (
-          schedules.map((s) => (
-            <div key={s.id} className="bg-white border border-gray-100 p-6 rounded-xl shadow-sm hover:shadow-md transition group">
+      {/* 日历视图 */}
+      {viewMode === 'calendar' ? (
+        <>
+          {schedules.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
+              暂无日程安排
+            </div>
+          ) : (
+            <ScheduleCalendar
+              schedules={schedules}
+              onEventClick={(schedule) => setSelectedSchedule(schedule)}
+            />
+          )}
+        </>
+      ) : (
+        <div className="space-y-4">
+          {schedules.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
+              暂无日程安排
+            </div>
+          ) : (
+            schedules.map((s) => (
+            <div 
+              key={s.id} 
+              className="bg-white border border-gray-100 p-6 rounded-xl shadow-sm hover:shadow-md transition group cursor-pointer"
+              onClick={() => setSelectedSchedule(s)}
+            >
               <div className="flex justify-between items-start">
-                <div className="space-y-3">
-                  <h3 className="text-lg font-bold text-gray-900">{s.title}</h3>
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-1 h-12 rounded-full"
+                      style={{ backgroundColor: s.color || '#3B82F6' }}
+                    />
+                    <h3 className="text-lg font-bold text-gray-900">{s.title}</h3>
+                  </div>
                   <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-4 w-4 text-blue-500" />
@@ -211,10 +294,16 @@ export const ScheduleList = () => {
                 </div>
                 {isAdminOrTeacher && (
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                    <button onClick={() => handleEdit(s)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleEdit(s); }} 
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                    >
                       <Pencil className="h-4 w-4" />
                     </button>
-                    <button onClick={() => handleDelete(s.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDelete(s.id); }} 
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -223,7 +312,14 @@ export const ScheduleList = () => {
             </div>
           ))
         )}
-      </div>
+        </div>
+      )}
+
+      {/* 详情模态框 */}
+      <ScheduleDetailModal
+        schedule={selectedSchedule}
+        onClose={() => setSelectedSchedule(null)}
+      />
     </div>
   );
 };

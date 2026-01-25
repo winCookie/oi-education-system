@@ -13,12 +13,14 @@ import { ContestSchedule } from './entities/contest-schedule.entity';
 import { BindingRequest } from './entities/binding-request.entity';
 import { Notification } from './entities/notification.entity';
 import { ParentStudentRelation } from './entities/parent-student-relation.entity';
+import { StudentReport } from './entities/student-report.entity';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
         username: configService.get<string>('DATABASE_USER'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [User, KnowledgePoint, Problem, StudentProgress, ContestSchedule, BindingRequest, Notification, ParentStudentRelation],
+        entities: [User, KnowledgePoint, Problem, StudentProgress, ContestSchedule, BindingRequest, Notification, ParentStudentRelation, StudentReport],
         synchronize: true, // Only for development!
       }),
     }),
@@ -55,6 +57,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     ProgressModule,
     ScheduleModule,
     NotificationsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -10,6 +10,10 @@ import { Login } from './pages/Login';
 import { TeacherDashboard } from './pages/TeacherDashboard';
 import { Profile } from './pages/Profile';
 import { UserManagement } from './pages/UserManagement';
+import { ReportEditor } from './components/Reports/ReportEditor';
+import { TeacherReportsList } from './components/Reports/TeacherReportsList';
+import { StudentReportsList } from './components/Reports/StudentReportsList';
+import { ReportView } from './components/Reports/ReportView';
 
 function App() {
   return (
@@ -26,6 +30,12 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/search" element={<GroupPoints isSearch />} />
+            {/* Report routes */}
+            <Route path="/teacher-reports" element={<TeacherReportsList />} />
+            <Route path="/student-reports" element={<StudentReportsList />} />
+            <Route path="/report-editor" element={<ReportEditor />} />
+            <Route path="/report-editor/:id" element={<ReportEditor />} />
+            <Route path="/report-view/:id" element={<ReportView />} />
             {/* Legacy routes for compatibility */}
             <Route path="/group/:group" element={<GroupPoints />} />
             <Route path="/admin" element={<TeacherDashboard />} />

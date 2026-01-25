@@ -42,12 +42,16 @@ export const StudentProgressDashboard = () => {
     setLoading(true);
     setError('');
     setSuccessMsg('');
+    
     try {
       await client.post('/notifications/binding-request', { studentUsername });
       setSuccessMsg('绑定申请已发送，请联系孩子在页面右上角通知中心同意申请。');
       setStudentUsername('');
+      // Refresh bound students list
+      await fetchBoundStudent();
     } catch (err: any) {
-      setError(err.response?.data?.message || '绑定失败，请检查学生账号是否正确');
+      const errorMsg = err.response?.data?.message || '绑定失败，请检查学生账号是否正确';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

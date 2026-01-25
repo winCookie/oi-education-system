@@ -53,16 +53,26 @@ export class NotificationsService {
   // Binding Request Logic
   async createBindingRequest(parentId: number, studentUsername: string) {
     const parent = await this.userRepository.findOne({ where: { id: parentId } });
+
+    if (!parent) {
+      throw new BadRequestException('家长账号不存在');
+    }
+
     const student = await this.userRepository.findOne({ where: { username: studentUsername } });
 
-    if (!student || student.role !== 'student') {
+    if (!student) {
       throw new BadRequestException('未找到该学生账号');
+    }
+
+    if (student.role !== 'student') {
+      throw new BadRequestException('该账号不是学生账号');
     }
 
     // Check if already bound in ParentStudentRelation
     const alreadyBound = await this.relationRepository.findOne({
       where: { parent: { id: parentId }, student: { id: student.id } }
     });
+
     if (alreadyBound) {
       throw new BadRequestException('您已经绑定了该学生');
     }
@@ -71,6 +81,7 @@ export class NotificationsService {
     const existing = await this.bindingRepository.findOne({
       where: { parent: { id: parentId }, student: { id: student.id }, status: BindingStatus.PENDING }
     });
+
     if (existing) {
       throw new BadRequestException('已向该学生发送过绑定申请，请耐心等待对方同意');
     }
@@ -86,7 +97,7 @@ export class NotificationsService {
     await this.createNotification(
       student.id,
       '新的家长绑定申请',
-      `家长 ${parent?.username} 申请绑定您的账号以查看练习进度。`,
+      `家长 ${parent.username} 申请绑定您的账号以查看练习进度。`,
       NotificationType.BINDING_REQUEST,
       savedRequest.id
     );

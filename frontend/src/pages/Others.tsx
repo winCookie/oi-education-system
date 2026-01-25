@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { ScheduleList } from '../components/Others/ScheduleList';
 import { StudentProgressDashboard } from '../components/Others/StudentProgressDashboard';
-import { Calendar, TrendingUp } from 'lucide-react';
+import { StudentReportsList } from '../components/Reports/StudentReportsList';
+import { Calendar, TrendingUp, FileText } from 'lucide-react';
 
 export const Others = () => {
-  const [activeTab, setActiveTab] = useState<'progress' | 'schedules'>('progress');
+  const [activeTab, setActiveTab] = useState<'progress' | 'schedules' | 'reports'>('progress');
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   return (
@@ -34,13 +35,28 @@ export const Others = () => {
           <Calendar className="h-5 w-5" />
           竞赛日程安排
         </button>
+        {(user?.role === 'student' || user?.role === 'parent') && (
+          <button
+            onClick={() => setActiveTab('reports')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all ${
+              activeTab === 'reports'
+                ? 'bg-teal-600 text-white shadow-lg shadow-teal-100'
+                : 'text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            <FileText className="h-5 w-5" />
+            学情报告
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[600px]">
         {activeTab === 'progress' && (user?.role === 'parent' || user?.role === 'admin' || user?.role === 'teacher') ? (
           <StudentProgressDashboard />
-        ) : (
+        ) : activeTab === 'schedules' ? (
           <ScheduleList />
+        ) : (
+          <StudentReportsList />
         )}
       </div>
     </div>

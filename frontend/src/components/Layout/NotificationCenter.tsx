@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Check, X, Info, UserPlus } from 'lucide-react';
+import { Bell, Check, X, Info, UserPlus, CheckCircle, XCircle } from 'lucide-react';
 import client from '../../api/client';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -59,6 +59,41 @@ export const NotificationCenter = () => {
     }
   };
 
+  // 根据通知类型和内容获取图标样式
+  const getNotificationIcon = (notification: any) => {
+    if (notification.type === 'binding_request') {
+      return {
+        icon: <UserPlus className="h-5 w-5" />,
+        bgColor: 'bg-orange-100',
+        textColor: 'text-orange-600'
+      };
+    }
+    
+    // 检查内容判断是成功还是失败通知
+    if (notification.title?.includes('通过') || notification.title?.includes('成功') || notification.title?.includes('同意')) {
+      return {
+        icon: <CheckCircle className="h-5 w-5" />,
+        bgColor: 'bg-green-100',
+        textColor: 'text-green-600'
+      };
+    }
+    
+    if (notification.title?.includes('拒绝') || notification.title?.includes('失败')) {
+      return {
+        icon: <XCircle className="h-5 w-5" />,
+        bgColor: 'bg-red-100',
+        textColor: 'text-red-600'
+      };
+    }
+    
+    // 默认
+    return {
+      icon: <Info className="h-5 w-5" />,
+      bgColor: 'bg-blue-100',
+      textColor: 'text-blue-600'
+    };
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -91,16 +126,18 @@ export const NotificationCenter = () => {
                   <p className="text-sm">暂无新通知</p>
                 </div>
               ) : (
-                notifications.map((n) => (
-                  <div 
-                    key={n.id} 
-                    className={`p-4 border-b border-gray-50 transition-colors ${n.isRead ? 'opacity-60' : 'bg-white hover:bg-blue-50/30'}`}
-                  >
-                    <div className="flex gap-3">
-                      <div className={`mt-1 p-1.5 rounded-lg shrink-0 ${n.type === 'binding_request' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
-                        {n.type === 'binding_request' ? <UserPlus className="h-4 w-4" /> : <Info className="h-4 w-4" />}
-                      </div>
-                      <div className="flex-1 space-y-1">
+                notifications.map((n) => {
+                  const iconConfig = getNotificationIcon(n);
+                  return (
+                    <div 
+                      key={n.id} 
+                      className={`p-4 border-b border-gray-50 transition-colors ${n.isRead ? 'opacity-60' : 'bg-white hover:bg-blue-50/30'}`}
+                    >
+                      <div className="flex gap-3">
+                        <div className={`mt-0.5 h-8 w-8 rounded-full shrink-0 flex items-center justify-center ${iconConfig.bgColor} ${iconConfig.textColor}`}>
+                          {iconConfig.icon}
+                        </div>
+                        <div className="flex-1 space-y-1">
                         <p className="text-sm font-bold text-gray-900">{n.title}</p>
                         <p className="text-xs text-gray-500 leading-relaxed">{n.content}</p>
                         <p className="text-[10px] text-gray-400">{new Date(n.createdAt).toLocaleString()}</p>
@@ -133,7 +170,8 @@ export const NotificationCenter = () => {
                       </div>
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </motion.div>

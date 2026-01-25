@@ -23,6 +23,9 @@ export class ContestSchedule {
   @Column({ nullable: true })
   link: string;
 
+  @Column({ default: '#3B82F6' })
+  color: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

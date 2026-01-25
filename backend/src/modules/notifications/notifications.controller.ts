@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Request, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, Request, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -29,7 +29,12 @@ export class NotificationsController {
     if (req.user.role !== 'parent') {
       throw new ForbiddenException('只有家长可以发起绑定申请');
     }
-    return this.notificationsService.createBindingRequest(req.user.id, body.studentUsername);
+
+    if (!body || !body.studentUsername || body.studentUsername.trim() === '') {
+      throw new BadRequestException('请提供学生用户名');
+    }
+
+    return this.notificationsService.createBindingRequest(req.user.id, body.studentUsername.trim());
   }
 
   @Post('binding-request/:id/:action')
