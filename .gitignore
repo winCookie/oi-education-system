@@ -1,0 +1,15 @@
+# 忽略超过50MB的视频文件
+backend/uploads/videos/99a1c49e-e575-42cd-a1c1-9868f32789c7.mp4
+backend/uploads/videos/eec13f5b-68bf-45e5-aab6-d2ecd733748d.mp4
+backend/uploads/videos/69f0a606-dda7-4222-9656-a35231adb0e9.mp4
+backend/uploads/videos/32c83393-1af8-4780-955e-23b5291f2ac0.mp4
+backend/uploads/videos/9a3845df-87c5-4b1b-95a5-f985b2329140.mp4
+backend/uploads/videos/6a0f917d-a4c5-4d93-baae-f1a7f8bc4f08.mp4
+backend/uploads/videos/da34854e-e30d-41f0-82fb-6e0996d07486.mp4
+
+# 忽略所有超过100MB的 .mov 文件（GitHub限制）
+backend/uploads/videos/*.mov
+
+# 注意：如果需要提交小于50MB的视频文件，请手动添加
+# 可以使用以下命令检查文件大小：
+# find backend/uploads/videos -type f -size -50M
