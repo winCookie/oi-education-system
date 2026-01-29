@@ -17,13 +17,28 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const student_progress_entity_1 = require("../../entities/student-progress.entity");
+const user_entity_1 = require("../../entities/user.entity");
+const parent_student_relation_entity_1 = require("../../entities/parent-student-relation.entity");
 const knowledge_point_entity_1 = require("../../entities/knowledge-point.entity");
 let ProgressService = class ProgressService {
     progressRepository;
     kpRepository;
-    constructor(progressRepository, kpRepository) {
+    userRepository;
+    relationRepository;
+    constructor(progressRepository, kpRepository, userRepository, relationRepository) {
         this.progressRepository = progressRepository;
         this.kpRepository = kpRepository;
+        this.userRepository = userRepository;
+        this.relationRepository = relationRepository;
+    }
+    async findUserById(id) {
+        return this.userRepository.findOne({ where: { id } });
+    }
+    async isBoundToStudent(parentId, studentId) {
+        const count = await this.relationRepository.count({
+            where: { parent: { id: parentId }, student: { id: studentId } }
+        });
+        return count > 0;
     }
     async markAsCompleted(userId, kpId) {
         let progress = await this.progressRepository.findOne({
@@ -45,6 +60,18 @@ let ProgressService = class ProgressService {
         });
     }
     async getProgressStats(userId) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (user && user.role === 'parent') {
+            return {
+                groups: {},
+                categories: {},
+                totalKPs: 0,
+                totalCompleted: 0,
+                overallPercent: 0,
+                recentKPs: [],
+                isParent: true,
+            };
+        }
         const allKPs = await this.kpRepository.find({
             select: ['id', 'category', 'group'],
         });
@@ -105,7 +132,11 @@ exports.ProgressService = ProgressService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(student_progress_entity_1.StudentProgress)),
     __param(1, (0, typeorm_1.InjectRepository)(knowledge_point_entity_1.KnowledgePoint)),
+    __param(2, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(3, (0, typeorm_1.InjectRepository)(parent_student_relation_entity_1.ParentStudentRelation)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], ProgressService);
 //# sourceMappingURL=progress.service.js.map

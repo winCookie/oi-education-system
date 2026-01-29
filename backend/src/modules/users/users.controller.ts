@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Request, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Put, Delete, Body, Param, UseGuards, Request, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserRole } from '../../entities/user.entity';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import * as argon2 from 'argon2';
 
 @Controller('users')
@@ -80,5 +81,30 @@ export class UsersController {
   @Post('bind-student')
   async bindStudent(@Request() req, @Body() body: { studentUsername: string }) {
     throw new BadRequestException('请通过新的通知系统发起绑定申请');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getProfile(@Request() req) {
+    const user = await this.usersService.findById(req.user.id);
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    
+    // 不返回密码等敏感信息
+    const { passwordHash, loginAttempts, lockUntil, ...profile } = user;
+    return profile;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('profile')
+  async updateProfile(@Request() req, @Body() updateDto: UpdateProfileDto) {
+    const user = await this.usersService.updateProfile(req.user.id, updateDto);
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    
+    const { passwordHash, loginAttempts, lockUntil, ...profile } = user;
+    return profile;
   }
 }

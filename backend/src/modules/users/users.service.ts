@@ -61,4 +61,17 @@ export class UsersService {
     const newUsers = this.usersRepository.create(users);
     return this.usersRepository.save(newUsers);
   }
+
+  async updateProfile(userId: number, data: { nickname?: string; avatar?: string; bio?: string }): Promise<User | null> {
+    const user = await this.findById(userId);
+    if (!user) {
+      return null;
+    }
+
+    if (data.nickname !== undefined) user.nickname = data.nickname;
+    if (data.avatar !== undefined) user.avatar = data.avatar;
+    if (data.bio !== undefined) user.bio = data.bio;
+
+    return this.usersRepository.save(user);
+  }
 }

@@ -55,6 +55,7 @@ const user_entity_1 = require("../../entities/user.entity");
 const video_service_1 = require("./video.service");
 const fs = __importStar(require("fs-extra"));
 const uuid_1 = require("uuid");
+const throttler_1 = require("@nestjs/throttler");
 let UploadController = class UploadController {
     videoService;
     constructor(videoService) {
@@ -72,21 +73,36 @@ let UploadController = class UploadController {
         if (req.user.role !== user_entity_1.UserRole.TEACHER && req.user.role !== user_entity_1.UserRole.ADMIN) {
             throw new common_1.BadRequestException('Only teachers or admins can upload videos');
         }
+        console.log(`Receiving chunk ${body.index} for upload ${body.uploadId}`);
+        if (!file) {
+            console.error('No file in chunk upload');
+            throw new common_1.BadRequestException('No file uploaded');
+        }
         const chunkPath = (0, path_1.join)(process.cwd(), 'uploads/chunks', body.uploadId, `${body.index}`);
-        await fs.writeFile(chunkPath, file.buffer);
-        return { success: true };
+        try {
+            await fs.writeFile(chunkPath, file.buffer);
+            return { success: true };
+        }
+        catch (err) {
+            console.error('Failed to write chunk:', err);
+            throw new common_1.BadRequestException('Failed to write chunk: ' + err.message);
+        }
     }
     async completeUpload(req, body) {
         if (req.user.role !== user_entity_1.UserRole.TEACHER && req.user.role !== user_entity_1.UserRole.ADMIN) {
             throw new common_1.BadRequestException('Only teachers or admins can upload videos');
         }
+        console.log(`Completing upload ${body.uploadId}, merging ${body.totalChunks} chunks`);
         try {
             const mergedPath = await this.videoService.mergeChunks(body.uploadId, body.fileName, body.totalChunks);
+            console.log(`Merged MP4 created at ${mergedPath}, starting HLS conversion`);
             const hlsOutputDir = (0, path_1.join)(process.cwd(), 'uploads/hls', body.uploadId);
             const hlsUrl = await this.videoService.convertToHls(mergedPath, hlsOutputDir);
+            console.log(`HLS conversion finished: ${hlsUrl}`);
             return { url: hlsUrl };
         }
         catch (err) {
+            console.error('Error in completeUpload:', err);
             throw new common_1.BadRequestException('Failed to process video: ' + err.message);
         }
     }
@@ -107,6 +123,7 @@ let UploadController = class UploadController {
 };
 exports.UploadController = UploadController;
 __decorate([
+    (0, throttler_1.SkipThrottle)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('video/init'),
     __param(0, (0, common_1.Request)()),
@@ -116,6 +133,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UploadController.prototype, "initUpload", null);
 __decorate([
+    (0, throttler_1.SkipThrottle)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('video/chunk'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
@@ -127,6 +145,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UploadController.prototype, "uploadChunk", null);
 __decorate([
+    (0, throttler_1.SkipThrottle)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('video/complete'),
     __param(0, (0, common_1.Request)()),
@@ -163,6 +182,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UploadController.prototype, "uploadVideo", null);
 exports.UploadController = UploadController = __decorate([
+    (0, throttler_1.SkipThrottle)(),
     (0, common_1.Controller)('upload'),
     __metadata("design:paramtypes", [video_service_1.VideoService])
 ], UploadController);

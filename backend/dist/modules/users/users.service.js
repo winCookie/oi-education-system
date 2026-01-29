@@ -17,10 +17,25 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("../../entities/user.entity");
+const parent_student_relation_entity_1 = require("../../entities/parent-student-relation.entity");
 let UsersService = class UsersService {
     usersRepository;
-    constructor(usersRepository) {
+    relationRepository;
+    constructor(usersRepository, relationRepository) {
         this.usersRepository = usersRepository;
+        this.relationRepository = relationRepository;
+    }
+    async findParentRelations(parentId) {
+        return this.relationRepository.find({
+            where: { parent: { id: parentId } },
+            relations: ['student']
+        });
+    }
+    async isBound(parentId, studentId) {
+        const count = await this.relationRepository.count({
+            where: { parent: { id: parentId }, student: { id: studentId } }
+        });
+        return count > 0;
     }
     async findOne(username) {
         return this.usersRepository.findOne({ where: { username } });
@@ -49,11 +64,26 @@ let UsersService = class UsersService {
         const newUsers = this.usersRepository.create(users);
         return this.usersRepository.save(newUsers);
     }
+    async updateProfile(userId, data) {
+        const user = await this.findById(userId);
+        if (!user) {
+            return null;
+        }
+        if (data.nickname !== undefined)
+            user.nickname = data.nickname;
+        if (data.avatar !== undefined)
+            user.avatar = data.avatar;
+        if (data.bio !== undefined)
+            user.bio = data.bio;
+        return this.usersRepository.save(user);
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(parent_student_relation_entity_1.ParentStudentRelation)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

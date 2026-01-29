@@ -1,3 +1,38 @@
+# System
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+backend/.env
+frontend/.env
+
+# Build
+dist/
+build/
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.keep
+
+# Luogu Plugin
+洛谷插件/config.json
+洛谷插件/data/
+洛谷插件/reports/
+洛谷插件/*.log
+洛谷插件/luogu_analysis.log
+
+# GESP Plugin
+gesp_plugin/config.json
+gesp_plugin/gesp_sites.json
+gesp_plugin/*.log
+gesp_plugin/*.html
+
 # 忽略超过50MB的视频文件
 backend/uploads/videos/99a1c49e-e575-42cd-a1c1-9868f32789c7.mp4
 backend/uploads/videos/eec13f5b-68bf-45e5-aab6-d2ecd733748d.mp4
@@ -9,7 +44,3 @@ backend/uploads/videos/da34854e-e30d-41f0-82fb-6e0996d07486.mp4
 
 # 忽略所有超过100MB的 .mov 文件（GitHub限制）
 backend/uploads/videos/*.mov
-
-# 注意：如果需要提交小于50MB的视频文件，请手动添加
-# 可以使用以下命令检查文件大小：
-# find backend/uploads/videos -type f -size -50M

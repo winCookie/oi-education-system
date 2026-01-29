@@ -1,0 +1,14 @@
+{
+  "cookie": "JSESSIONID=your_session_id; SERVERID=your_server_id;",
+  "student_info": {
+    "name": "张三",
+    "id_type": "身份证",
+    "id_card": "110101201001011234",
+    "grade": "9 年级",
+    "language": "C++",
+    "level": "六级",
+    "province": "广东省",
+    "city": "深圳市"
+  },
+  "cron_interval_minutes": 60
+}

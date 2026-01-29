@@ -35,6 +35,7 @@ export const Navbar = () => {
             </Link>
             <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
               <Link to="/knowledge" className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium">知识与交互</Link>
+              <Link to="/blog" className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium">博客</Link>
               <Link to="/others" className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium">其他</Link>
               {user && (user.role === 'teacher' || user.role === 'admin') && (
                 <Link to="/admin-center" className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium">管理后台</Link>
@@ -88,6 +89,7 @@ export const Navbar = () => {
       {isMenuOpen && (
         <div className="sm:hidden bg-white border-t px-4 pt-2 pb-4 space-y-1">
           <Link to="/knowledge" className="block px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-50">知识与交互</Link>
+          <Link to="/blog" className="block px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-50">博客</Link>
           <Link to="/others" className="block px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-50">其他</Link>
           {user && (user.role === 'teacher' || user.role === 'admin') && (
             <Link to="/admin-center" className="block px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-50">管理后台</Link>

@@ -56,14 +56,41 @@ let AuthService = class AuthService {
     }
     async validateUser(username, pass) {
         const user = await this.usersService.findOne(username);
-        if (user && (await argon2.verify(user.passwordHash, pass))) {
+        if (!user) {
+            return null;
+        }
+        if (user.lockUntil && user.lockUntil > new Date()) {
+            throw new common_1.ForbiddenException(`账号已锁定，请在 ${user.lockUntil.toLocaleString()} 后再试，或联系管理员。`);
+        }
+        if (await argon2.verify(user.passwordHash, pass)) {
+            await this.usersService.update(user.id, { loginAttempts: 0, lockUntil: null });
             const { passwordHash, ...result } = user;
             return result;
+        }
+        const newAttempts = (user.loginAttempts || 0) + 1;
+        let lockUntil = null;
+        if (newAttempts >= 3) {
+            lockUntil = new Date();
+            lockUntil.setHours(lockUntil.getHours() + 1);
+        }
+        await this.usersService.update(user.id, {
+            loginAttempts: newAttempts,
+            lockUntil
+        });
+        if (newAttempts >= 3) {
+            throw new common_1.ForbiddenException('登录失败次数过多，账号已锁定1小时。请联系管理员。');
         }
         return null;
     }
     async login(user) {
-        const payload = { username: user.username, sub: user.id, role: user.role };
+        const newSessionVersion = (user.sessionVersion || 0) + 1;
+        await this.usersService.update(user.id, { sessionVersion: newSessionVersion });
+        const payload = {
+            username: user.username,
+            sub: user.id,
+            role: user.role,
+            sv: newSessionVersion
+        };
         return {
             access_token: this.jwtService.sign(payload),
             user: {

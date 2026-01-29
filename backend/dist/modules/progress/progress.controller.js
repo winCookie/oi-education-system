@@ -16,6 +16,7 @@ exports.ProgressController = void 0;
 const common_1 = require("@nestjs/common");
 const progress_service_1 = require("./progress.service");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const throttler_1 = require("@nestjs/throttler");
 let ProgressController = class ProgressController {
     progressService;
     constructor(progressService) {
@@ -29,6 +30,21 @@ let ProgressController = class ProgressController {
     }
     async getMyStats(req) {
         return this.progressService.getProgressStats(req.user.userId);
+    }
+    async getUserStats(req, userId) {
+        const targetUserId = +userId;
+        const currentUser = await this.progressService.findUserById(req.user.id);
+        let authorized = false;
+        if (req.user.role === 'admin' || req.user.role === 'teacher' || req.user.id === targetUserId) {
+            authorized = true;
+        }
+        else if (req.user.role === 'parent') {
+            authorized = await this.progressService.isBoundToStudent(req.user.id, targetUserId);
+        }
+        if (!authorized) {
+            throw new Error('Unauthorized access to progress stats');
+        }
+        return this.progressService.getProgressStats(targetUserId);
     }
 };
 exports.ProgressController = ProgressController;
@@ -57,7 +73,17 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ProgressController.prototype, "getMyStats", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('stats/:userId'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], ProgressController.prototype, "getUserStats", null);
 exports.ProgressController = ProgressController = __decorate([
+    (0, throttler_1.SkipThrottle)(),
     (0, common_1.Controller)('progress'),
     __metadata("design:paramtypes", [progress_service_1.ProgressService])
 ], ProgressController);

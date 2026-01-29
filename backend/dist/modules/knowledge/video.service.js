@@ -51,8 +51,9 @@ let VideoService = VideoService_1 = class VideoService {
         await fs.ensureDir(outputDir);
         const outputFileName = 'index.m3u8';
         const outputPath = path.join(outputDir, outputFileName);
+        const ffmpegCommand = typeof ffmpeg === 'function' ? ffmpeg : ffmpeg.default || ffmpeg;
         return new Promise((resolve, reject) => {
-            ffmpeg(inputPath)
+            ffmpegCommand(inputPath)
                 .outputOptions([
                 '-profile:v baseline',
                 '-level 3.0',
@@ -81,18 +82,35 @@ let VideoService = VideoService_1 = class VideoService {
     }
     async mergeChunks(uploadId, fileName, totalChunks) {
         const chunkDir = path.join(process.cwd(), 'uploads/chunks', uploadId);
-        const finalPath = path.join(process.cwd(), 'uploads/videos', `${uploadId}${path.extname(fileName)}`);
+        const videosDir = path.join(process.cwd(), 'uploads/videos');
+        const finalPath = path.join(videosDir, `${uploadId}${path.extname(fileName)}`);
+        await fs.ensureDir(videosDir);
         const writeStream = fs.createWriteStream(finalPath);
-        for (let i = 0; i < totalChunks; i++) {
-            const chunkPath = path.join(chunkDir, `${i}`);
-            const chunkBuffer = await fs.readFile(chunkPath);
-            writeStream.write(chunkBuffer);
+        try {
+            for (let i = 0; i < totalChunks; i++) {
+                const chunkPath = path.join(chunkDir, `${i}`);
+                if (!await fs.pathExists(chunkPath)) {
+                    throw new Error(`Chunk ${i} is missing at ${chunkPath}`);
+                }
+                const chunkBuffer = await fs.readFile(chunkPath);
+                writeStream.write(chunkBuffer);
+            }
+        }
+        catch (err) {
+            writeStream.end();
+            throw err;
         }
         writeStream.end();
         return new Promise((resolve, reject) => {
             writeStream.on('finish', async () => {
-                await fs.remove(chunkDir);
-                resolve(finalPath);
+                try {
+                    await fs.remove(chunkDir);
+                    resolve(finalPath);
+                }
+                catch (cleanupErr) {
+                    this.logger.warn(`Failed to clean up chunks: ${cleanupErr.message}`);
+                    resolve(finalPath);
+                }
             });
             writeStream.on('error', reject);
         });

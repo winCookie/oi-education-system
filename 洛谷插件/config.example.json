@@ -1,0 +1,9 @@
+{
+  "team_id": "12345",
+  "cookies": {
+    "__client_id": "your_client_id",
+    "_uid": "your_uid"
+  },
+  "retry_delay": 2,
+  "max_retries": 3
+}

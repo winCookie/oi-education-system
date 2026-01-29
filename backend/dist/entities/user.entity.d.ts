@@ -10,6 +10,13 @@ export declare class User {
     username: string;
     passwordHash: string;
     role: UserRole;
+    sessionVersion: number;
+    loginAttempts: number;
+    lockUntil: Date | null;
+    avatar: string;
+    nickname: string;
+    luoguUid: string;
+    bio: string;
     createdAt: Date;
     updatedAt: Date;
 }

@@ -29,6 +29,8 @@ services:
       - "3000:3000"
     volumes:
       - ./backend/uploads:/app/uploads
+      - ./洛谷插件:/洛谷插件
+      - ./gesp_plugin:/gesp_plugin
 
   frontend:
     build: ./frontend

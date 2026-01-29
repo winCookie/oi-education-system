@@ -50,6 +50,7 @@ const common_1 = require("@nestjs/common");
 const users_service_1 = require("./users.service");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const user_entity_1 = require("../../entities/user.entity");
+const update_profile_dto_1 = require("./dto/update-profile.dto");
 const argon2 = __importStar(require("argon2"));
 let UsersController = class UsersController {
     usersService;
@@ -94,6 +95,32 @@ let UsersController = class UsersController {
         await this.usersService.remove(+id);
         return { success: true };
     }
+    async unlock(req, id) {
+        if (req.user.role !== user_entity_1.UserRole.ADMIN && req.user.role !== user_entity_1.UserRole.TEACHER) {
+            throw new common_1.ForbiddenException('Only admin or teacher can unlock accounts');
+        }
+        await this.usersService.update(+id, { loginAttempts: 0, lockUntil: null });
+        return { success: true };
+    }
+    async bindStudent(req, body) {
+        throw new common_1.BadRequestException('请通过新的通知系统发起绑定申请');
+    }
+    async getProfile(req) {
+        const user = await this.usersService.findById(req.user.id);
+        if (!user) {
+            throw new common_1.NotFoundException('用户不存在');
+        }
+        const { passwordHash, loginAttempts, lockUntil, ...profile } = user;
+        return profile;
+    }
+    async updateProfile(req, updateDto) {
+        const user = await this.usersService.updateProfile(req.user.id, updateDto);
+        if (!user) {
+            throw new common_1.NotFoundException('用户不存在');
+        }
+        const { passwordHash, loginAttempts, lockUntil, ...profile } = user;
+        return profile;
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -132,6 +159,41 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "remove", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)(':id/unlock'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "unlock", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('bind-student'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "bindStudent", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('profile'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Put)('profile'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_profile_dto_1.UpdateProfileDto]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "updateProfile", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService])

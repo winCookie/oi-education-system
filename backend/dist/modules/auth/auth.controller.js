@@ -17,10 +17,13 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const user_entity_1 = require("../../entities/user.entity");
 const jwt_auth_guard_1 = require("./jwt-auth.guard");
+const users_service_1 = require("../users/users.service");
 let AuthController = class AuthController {
     authService;
-    constructor(authService) {
+    usersService;
+    constructor(authService, usersService) {
         this.authService = authService;
+        this.usersService = usersService;
     }
     async login(body) {
         const user = await this.authService.validateUser(body.username, body.password);
@@ -35,8 +38,19 @@ let AuthController = class AuthController {
         }
         return this.authService.register(body.username, body.password, user_entity_1.UserRole.STUDENT);
     }
-    getProfile(req) {
-        return req.user;
+    async getProfile(req) {
+        const user = await this.usersService.findById(req.user.id);
+        if (!user)
+            return null;
+        const { passwordHash, ...result } = user;
+        if (user.role === 'parent') {
+            const relations = await this.usersService.findParentRelations(user.id);
+            result.boundStudents = relations.map(r => ({
+                id: r.student.id,
+                username: r.student.username
+            }));
+        }
+        return result;
     }
 };
 exports.AuthController = AuthController;
@@ -62,10 +76,11 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService,
+        users_service_1.UsersService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

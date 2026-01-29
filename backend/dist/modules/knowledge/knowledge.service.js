@@ -58,6 +58,7 @@ let KnowledgeService = class KnowledgeService {
         const problem = this.problemRepository.create({
             ...problemData,
             knowledgePoint: kp,
+            videoUpdatedAt: problemData.videoUrl ? new Date() : null,
         });
         return this.problemRepository.save(problem);
     }
@@ -75,6 +76,10 @@ let KnowledgeService = class KnowledgeService {
         await this.kpRepository.delete(id);
     }
     async updateProblem(id, data) {
+        const existing = await this.problemRepository.findOne({ where: { id } });
+        if (existing && data.videoUrl && data.videoUrl !== existing.videoUrl) {
+            data.videoUpdatedAt = new Date();
+        }
         await this.problemRepository.update(id, data);
         return this.problemRepository.findOne({ where: { id } });
     }

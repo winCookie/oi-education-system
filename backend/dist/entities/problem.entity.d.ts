@@ -5,6 +5,7 @@ export declare class Problem {
     contentMd: string;
     templateCpp: string;
     videoUrl: string;
+    videoUpdatedAt: Date | null;
     knowledgePoint: KnowledgePoint;
     createdAt: Date;
     updatedAt: Date;

@@ -18,6 +18,7 @@ let Problem = class Problem {
     contentMd;
     templateCpp;
     videoUrl;
+    videoUpdatedAt;
     knowledgePoint;
     createdAt;
     updatedAt;
@@ -43,6 +44,10 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Problem.prototype, "videoUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    __metadata("design:type", Object)
+], Problem.prototype, "videoUpdatedAt", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => knowledge_point_entity_1.KnowledgePoint, (kp) => kp.problems),
     __metadata("design:type", knowledge_point_entity_1.KnowledgePoint)

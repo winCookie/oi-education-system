@@ -35,6 +35,18 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   lockUntil: Date | null;
 
+  @Column({ nullable: true })
+  avatar: string;
+
+  @Column({ nullable: true })
+  nickname: string;
+
+  @Column({ nullable: true })
+  luoguUid: string;
+
+  @Column({ type: 'text', nullable: true })
+  bio: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

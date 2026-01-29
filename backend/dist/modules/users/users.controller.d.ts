@@ -1,5 +1,6 @@
 import { UsersService } from './users.service';
 import { UserRole } from '../../entities/user.entity';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 export declare class UsersController {
     private usersService;
     constructor(usersService: UsersService);
@@ -14,5 +15,35 @@ export declare class UsersController {
     update(req: any, id: string, body: any): Promise<import("../../entities/user.entity").User | null>;
     remove(req: any, id: string): Promise<{
         success: boolean;
+    }>;
+    unlock(req: any, id: string): Promise<{
+        success: boolean;
+    }>;
+    bindStudent(req: any, body: {
+        studentUsername: string;
+    }): Promise<void>;
+    getProfile(req: any): Promise<{
+        id: number;
+        username: string;
+        role: UserRole;
+        sessionVersion: number;
+        avatar: string;
+        nickname: string;
+        luoguUid: string;
+        bio: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    updateProfile(req: any, updateDto: UpdateProfileDto): Promise<{
+        id: number;
+        username: string;
+        role: UserRole;
+        sessionVersion: number;
+        avatar: string;
+        nickname: string;
+        luoguUid: string;
+        bio: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
 }

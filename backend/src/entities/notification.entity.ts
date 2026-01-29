@@ -3,7 +3,10 @@ import { User } from './user.entity';
 
 export enum NotificationType {
   BINDING_REQUEST = 'binding_request',
-  SYSTEM = 'system'
+  SYSTEM = 'system',
+  BLOG_APPROVED = 'blog_approved',
+  BLOG_REJECTED = 'blog_rejected',
+  BLOG_COMMENT = 'blog_comment',
 }
 
 @Entity('notifications')

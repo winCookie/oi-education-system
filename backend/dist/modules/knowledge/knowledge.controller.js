@@ -18,6 +18,7 @@ const knowledge_service_1 = require("./knowledge.service");
 const knowledge_point_entity_1 = require("../../entities/knowledge-point.entity");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const user_entity_1 = require("../../entities/user.entity");
+const throttler_1 = require("@nestjs/throttler");
 let KnowledgeController = class KnowledgeController {
     knowledgeService;
     constructor(knowledgeService) {
@@ -160,6 +161,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], KnowledgeController.prototype, "remove", null);
 exports.KnowledgeController = KnowledgeController = __decorate([
+    (0, throttler_1.SkipThrottle)(),
     (0, common_1.Controller)('knowledge'),
     __metadata("design:paramtypes", [knowledge_service_1.KnowledgeService])
 ], KnowledgeController);

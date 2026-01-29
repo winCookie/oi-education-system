@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { ScheduleList } from '../components/Others/ScheduleList';
 import { StudentProgressDashboard } from '../components/Others/StudentProgressDashboard';
 import { StudentReportsList } from '../components/Reports/StudentReportsList';
-import { Calendar, TrendingUp, FileText } from 'lucide-react';
+import { GespMonitor } from '../components/Others/GespMonitor';
+import { Calendar, TrendingUp, FileText, MapPin } from 'lucide-react';
 
 export const Others = () => {
-  const [activeTab, setActiveTab] = useState<'progress' | 'schedules' | 'reports'>('progress');
+  const [activeTab, setActiveTab] = useState<'progress' | 'schedules' | 'reports' | 'gesp'>('progress');
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 flex items-center gap-2 w-fit">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 flex flex-wrap items-center gap-2 w-fit">
         {(user?.role === 'parent' || user?.role === 'admin' || user?.role === 'teacher') && (
           <button
             onClick={() => setActiveTab('progress')}
@@ -48,6 +49,17 @@ export const Others = () => {
             学情报告
           </button>
         )}
+        <button
+          onClick={() => setActiveTab('gesp')}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all ${
+            activeTab === 'gesp'
+              ? 'bg-orange-600 text-white shadow-lg shadow-orange-100'
+              : 'text-gray-500 hover:bg-gray-50'
+          }`}
+        >
+          <MapPin className="h-5 w-5" />
+          GESP 考位
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[600px]">
@@ -55,6 +67,8 @@ export const Others = () => {
           <StudentProgressDashboard />
         ) : activeTab === 'schedules' ? (
           <ScheduleList />
+        ) : activeTab === 'gesp' ? (
+          <GespMonitor />
         ) : (
           <StudentReportsList />
         )}

@@ -9,7 +9,7 @@ export declare class UploadController {
     }>;
     uploadChunk(file: Express.Multer.File, body: {
         uploadId: string;
-        index: number;
+        index: string | number;
     }, req: any): Promise<{
         success: boolean;
     }>;

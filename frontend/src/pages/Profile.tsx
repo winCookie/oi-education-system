@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
-import { User, BookOpen, CheckCircle, Clock, Award, TrendingUp } from 'lucide-react';
+import { User, BookOpen, CheckCircle, Clock, Award, TrendingUp, Edit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface CategoryStat {
@@ -64,12 +64,19 @@ export const Profile = ({ overrideStudentId }: { overrideStudentId?: number }) =
         <div className="bg-blue-600 p-4 rounded-2xl text-white">
           <User className="h-12 w-12" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900">{user.username}</h1>
           <p className="text-gray-500">
             {user.role === 'parent' ? '家长账户 · 关注孩子成长' : 'OI 探索者 · 开启竞赛之旅'}
           </p>
         </div>
+        <Link
+          to="/profile/edit"
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+        >
+          <Edit className="h-4 w-4" />
+          编辑资料
+        </Link>
         {user.role !== 'parent' && (
           <div className="ml-auto flex gap-8">
             <div className="text-center">
